@@ -1,0 +1,16 @@
+{
+  "name": "string-search",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava",
+    "performance": "node performance.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^3.8.2",
+    "sizeof": "^1.0.0"
+  }
+}
