@@ -40,7 +40,6 @@ const lookupIterative = function(index, str, exactMatch) {
 };
 
 
-// 0.83 times as fast than lookupIterative, but makes it easier to do things like fuzzy matching
 const lookupRecursive = function(index, str, exactMatch) {
   if(!index) {
     return [];
@@ -59,8 +58,7 @@ const lookupRecursive = function(index, str, exactMatch) {
   }
 };
 
-// about 0.08 times as fast as lookupRecursive
-const lookupRecursiveWildcard = function(index, searchStr, exactMatch) {
+const lookupRecursiveSingleCharWildcard = function(index, searchStr, exactMatch) {
   if(searchStr.length === 0) {
     if(exactMatch) {
       if(index[null]) {
@@ -74,15 +72,54 @@ const lookupRecursiveWildcard = function(index, searchStr, exactMatch) {
   }
   else if (searchStr[0] !== '?') {
     if(index[searchStr[0]]) {
-      return lookupRecursiveWildcard(index[searchStr[0]], searchStr.substr(1), exactMatch);
+      return lookupRecursiveSingleCharWildcard(index[searchStr[0]], searchStr.substr(1), exactMatch);
     }
     else {
       return [];
     }
   }
-  else {  // We are dealing with a wildcard
+  else if (searchStr[0] === '?') {  // We are dealing with a single-char wildcard, so consume it and move on
     return Object.keys(index).map(k => {
-      return lookupRecursiveWildcard(index[k], searchStr.substr(1), exactMatch);
+      return lookupRecursiveSingleCharWildcard(index[k], searchStr.substr(1), exactMatch);
+    }).reduce((acc, arr) => acc.concat(arr), []);
+  }
+};
+
+// WARNING: This lookup function may be EXTREMELY slow depending on the size of the index, similarity of words in it and placement of the wildcard (closer to the front of the word = slower)
+// In the limit case a searchStr of "*" will match every matching combination of wildcard and letters for every word in the index, so use it sensibly and carefully and probably not at all
+const lookupRecursiveMultiCharWildcard = function(index, searchStr, exactMatch) {
+  if(searchStr.length === 0) {
+    if(exactMatch) {
+      if(index[null]) {
+        return [index[null]];
+      }
+      else {
+        return [];
+      }
+    }
+    return [index];
+  }
+  else if (searchStr[0] !== '?' && searchStr[0] !== '*') {
+    if(index[searchStr[0]]) {
+      return lookupRecursiveMultiCharWildcard(index[searchStr[0]], searchStr.substr(1), exactMatch);
+    }
+    else {
+      return [];
+    }
+  }
+  else if (searchStr[0] === '?') {  // We are dealing with a single-char wildcard, so consume it and move on
+    return Object.keys(index).map(k => {
+      return lookupRecursiveMultiCharWildcard(index[k], searchStr.substr(1), exactMatch);
+    }).reduce((acc, arr) => acc.concat(arr), []);
+  }
+  else if (searchStr[0] === '*') {  // We are dealing with a multi-char wildcard, so try both the cases where the wildcard is used up here, and where it propagates down to the next level
+    return Object.keys(index).map(k => {
+      if(k !== "null") {  // Don't accidentally recurse past the end of words
+        return lookupRecursiveMultiCharWildcard(index[k], searchStr.substr(1), exactMatch).concat(  // Try ending the wildcard here first...
+          lookupRecursiveMultiCharWildcard(index[k], searchStr, exactMatch)                         // ...then retry with the wildcard still applying to more characters
+        );
+      }
+      return [];
     }).reduce((acc, arr) => acc.concat(arr), []);
   }
 };
@@ -92,5 +129,6 @@ module.exports = {
   buildIndex,
   lookupIterative,
   lookupRecursive,
-  lookupRecursiveWildcard
+  lookupRecursiveSingleCharWildcard,
+  lookupRecursiveMultiCharWildcard,
 };

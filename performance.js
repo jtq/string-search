@@ -7,7 +7,8 @@ const {
     buildIndex,
     lookupIterative,
     lookupRecursive,
-    lookupRecursiveWildcard,
+    lookupRecursiveSingleCharWildcard,
+    lookupRecursiveMultiCharWildcard,
 } = require('./index');
 
 // Utility functions
@@ -58,8 +59,14 @@ time(`lookupRecursive ${QUERY_TERM}`, () => {
   }
 });
 
-time(`lookupRecursiveWildcard ${QUERY_TERM}`, () => {
+time(`lookupRecursiveSingleCharWildcard ${QUERY_TERM}`, () => {
   for(let i=0; i<MAX_ITERATIONS; i++) {
-    lookupRecursiveWildcard(index, QUERY_TERM, true);
+    lookupRecursiveSingleCharWildcard(index, QUERY_TERM, true);
+  }
+});
+
+time(`lookupRecursiveMultiCharWildcard ${QUERY_TERM}`, () => {
+  for(let i=0; i<MAX_ITERATIONS; i++) {
+    lookupRecursiveMultiCharWildcard(index, QUERY_TERM, true);
   }
 });

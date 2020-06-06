@@ -19,11 +19,17 @@ Attempt at a maximally-efficient lookup using iteration to avoid function-invoca
 
 #### lookupRecursive(index, query, exactMatch)
 
-Functionally identical to `lookupIterative()`, but uses recursion and object-allocation rather than iteration.  Fairly consistently around 1.75x slower than `lookupIterative()`, but a simper, cleaner base on which to build more advanced lookup functions.  Does not support wildcards or any advanced functionality.
+Functionally identical to `lookupIterative()`, but uses recursion and object-allocation rather than iteration.  Fairly consistently around 1.75x slower than `lookupIterative()`, but a simper cleaner base on which to build more advanced lookup functions.  Does not support wildcards or any advanced functionality.
 
-#### lookupRecursiveWildcard(index, query, exactMatch)
+#### lookupRecursiveSingleCharWildcard(index, query, exactMatch)
 
 An extension of `lookupRecursive()`, that supports single-character wildcards in queries with `?`.  Around 1.6x slower than `lookupRecursive()` and 2.8x slower than `lookupIterative()`.
+
+#### lookupRecursiveMultiCharWildcard(index, query, exactMatch)
+
+An initial, extremely naive extension of `lookupRecursiveSingleCharWildcard()` that supports multi-character wildcards in queries with `*`.  Varies between equivalent speed and hundreds of times slower than `lookupRecursiveSingleCharWildcard()`, depending on where the `*` wildcard appears in the query.
+
+When run in non-exact mode returns every possible matching combination of wildcard and letters for every matching word in the index, which gets very big, and very slow, very fast.
 
 ## Tests
 
