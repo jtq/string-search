@@ -29,8 +29,6 @@ An extension of `lookupRecursive()`, that supports single-character wildcards in
 
 An initial, extremely naive extension of `lookupRecursiveSingleCharWildcard()` that supports multi-character wildcards in queries with `*`.  Varies between equivalent speed and hundreds of times slower than `lookupRecursiveSingleCharWildcard()`, depending on where the `*` wildcard appears in the query.
 
-When run in non-exact mode returns every possible matching combination of wildcard and letters for every matching word in the index, which gets very big, and very slow, very fast.
-
 ## Tests
 
 `npm test`

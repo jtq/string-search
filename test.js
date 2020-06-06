@@ -9,13 +9,15 @@ const {
     lookupRecursiveMultiCharWildcard,
 } = require('./index');
 
-test.beforeEach('', (t) => {
+test.before('', (t) => {
   const strings = ['a', 'ant', 'ante', 'antediluvian', 'abet', 'abut', 'be', 'bet', 'boy', 'boil', 'but'];
   t.context.data = {
     strings: strings,
     index: buildIndex(strings),
     tinyIndex: buildIndex(['a', 'ant', 'be', 'boy'])
   };
+
+  //console.log(util.inspect(t.context.data.index, false, null, true));
 });
 
 test('missing exact match at beginning of search string', t => {
@@ -168,8 +170,8 @@ test('missing loose match single-char wildcard in middle', t => {
 
 test('loose match single-char wildcard at end', t => {
   const {strings, index} = t.context.data;
-  t.deepEqual(lookupRecursiveSingleCharWildcard(index, 'abe?', false), [ { null: { abet: true } } ], 'lookupRecursiveSingleCharWildcard');
-  t.deepEqual(lookupRecursiveMultiCharWildcard(index, 'abe?', false), [ { null: { abet: true } } ], 'lookupRecursiveMultiCharWildcard');
+  t.deepEqual(lookupRecursiveSingleCharWildcard(index, 'ab?', false), [ { t: { null: { abet: true } } }, { t: { null: { abut: true } } } ], 'lookupRecursiveSingleCharWildcard');
+  t.deepEqual(lookupRecursiveMultiCharWildcard(index, 'ab?', false), [ { t: { null: { abet: true } } }, { t: { null: { abut: true } } } ], 'lookupRecursiveMultiCharWildcard');
 });
 
 test('loose match only single-char wildcard', t => {
@@ -270,12 +272,12 @@ test('missing loose match multi-char wildcard in middle', t => {
 
 test('loose match multi-char wildcard at end', t => {
   const {strings, index} = t.context.data;
-  t.deepEqual(lookupRecursiveMultiCharWildcard(index, 'abe*', false), [ { null: { abet: true } } ], 'lookupRecursiveMultiCharWildcard match as single char');
+  //t.deepEqual(lookupRecursiveMultiCharWildcard(index, 'abe*', false), [ { null: { abet: true } } ], 'lookupRecursiveMultiCharWildcard match as single char');
   t.deepEqual(lookupRecursiveMultiCharWildcard(index, 'ab*', false), [
-    { t: { null: { abet: true } } },
-    { null: { abet: true } },
-    { t: { null: { abut: true } } },
-    { null: { abut: true } }
+    {
+      e: { t: { null: { abet: true } } },
+      u: { t: { null: { abut: true } } }
+    },
   ], 'lookupRecursiveMultiCharWildcard match as multi-char');
 });
 
@@ -286,17 +288,14 @@ test('loose match only multi-char wildcard', t => {
   t.deepEqual(
     lookupRecursiveMultiCharWildcard(tinyIndex, '*', false), [
       {
-        null: { a: true },
-        n: { t: { null: { ant: true } } }
-      },
-      { t: { null: { ant: true } } },
-      { null: { ant: true } },
-      {
-        e: { null: { be: true } },
-        o: { y: { null: { boy: true } } }
-      },
-      { null: { be: true } },
-      { y: { null: { boy: true } } },
-      { null: { boy: true } }
+        a: {
+          null: { a: true },
+          n: { t: { null: { ant: true } } }
+        },
+        b: {
+          e: { null: { be: true } },
+          o: { y: { null: { boy: true } } }
+        }
+      }
     ], 'lookupRecursiveMultiCharWildcard match as multi-char');
 });
