@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "ava",
-    "performance": "node performance.js"
+    "performance": "node performance.js",
+    "explore": "node explore.js"
   },
   "author": "",
   "license": "ISC",

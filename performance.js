@@ -18,9 +18,10 @@ function dump(obj) {
 
 function time(title, func) {
   const start = Date.now();
-  func();
+  const result = func();
   const took = Date.now()-start;
   console.log(`${title}: ${took}ms`);
+  return result;
 }
 
 // Process args & set up runs
