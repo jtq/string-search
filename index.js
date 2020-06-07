@@ -1,26 +1,32 @@
 const util = require('util');
 
-const buildIndex = function(strings) {
-  let index = {};
+const buildIndex = function(index, strings, category) {
   for(let i=0; i<strings.length; i++) {
-    let str = strings[i];
-    let loop = index;
-    for(j=0; j<str.length; j++) {
-      let char = str[j];
-      if(!loop[char]) {
-        loop[char] = {};
-      }
-      if(j === str.length-1) {
-        if(!loop[char][null]) {
-          loop[char][null] = {};
-        }
-        loop[char][null][str] = true;
-      }
-      loop = loop[char];
-    }
+    addToIndex(index, strings[i], category);
   };
   return index;
 };
+
+const addToIndex = function(index, str, category) {
+  let loop = index;
+  for(j=0; j<str.length; j++) {
+    let char = str[j];
+    if(!loop[char]) {
+      loop[char] = {};
+    }
+    if(j === str.length-1) {
+      if(!loop[char][null]) {
+        loop[char][null] = {};
+      }
+      if(!loop[char][null][category]) {
+        loop[char][null][category] = {};
+      }
+      loop[char][null][category][str] = true;
+    }
+    loop = loop[char];
+  }
+  return index;
+}
 
 const lookupIterative = function(index, str, exactMatch) {
   for(let i=0; i<str.length; i++) {
@@ -133,6 +139,7 @@ const lookupRecursiveMultiCharWildcard = function(index, searchStr, exactMatch) 
 
 module.exports = {
   buildIndex,
+  addToIndex,
   lookupIterative,
   lookupRecursive,
   lookupRecursiveSingleCharWildcard,

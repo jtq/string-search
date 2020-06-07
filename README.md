@@ -7,8 +7,37 @@ Create a simple trie-based search index from an array of strings, then use a var
 ```
 const { buildIndex, lookupIterative } = require('string-search');
 const words = [ 'a', 'aa', 'aaa', 'aah'... 'zwinglianist', 'zwitter', 'zwitterion', 'zwitterionic'];
-const index = buildIndex(words);
+const index = buildIndex({}, words);
 console.log(lookupIterative(index, 'infinitesimal', true));
+```
+
+## Advanced index building
+
+### Progressively add a value to an existing index
+
+```
+const index = buildIndex({}, [...]);
+const newIndex = addToIndex(index, 'newterm');    // Mutates existing index object but also returns it for convenience
+console.log(index === newIndex);
+```
+
+### Progressively add array of values to an existing index
+
+```
+const index = buildIndex({}, [...]);
+const newIndex = buildIndex(index, [...]);    // Mutates existing index object but also returns it for convenience
+console.log(index === newIndex);
+```
+
+### Partition matches into different categories
+
+```
+const index = buildIndex({}, ['a', 'at'], 'category');
+addToIndex(index, 'at', 'othercat');
+addToIndex(index, 'be', 'othercat');
+console.log(index.a[null] === { category: { a:true } });
+console.log(index.a.t[null] === { category: { at: true }, othercat: { at: true } });
+console.log(index.b.e[null].othercat === { be: true });
 ```
 
 ### Implemented lookup functions

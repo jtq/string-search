@@ -42,7 +42,7 @@ const longest = words.reduce((acc, word) => Math.max(acc, word.length), 0);
 
 console.log(`Building index of ${words.length} words`)
 const start = Date.now();
-const index = buildIndex(words);
+const index = buildIndex({}, words);
 console.log(`  ... done: ${Date.now()-start}ms`);
 console.log(`  shortest word   : ${shortest} chars`);
 console.log(`  longest word    : ${longest} chars\n`);
