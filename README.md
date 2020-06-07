@@ -35,9 +35,9 @@ console.log(index === newIndex);
 const index = buildIndex({}, ['a', 'at'], 'category');
 addToIndex(index, 'at', 'othercat');
 addToIndex(index, 'be', 'othercat');
-console.log(index.a[null] === { category: { a:true } });
-console.log(index.a.t[null] === { category: { at: true }, othercat: { at: true } });
-console.log(index.b.e[null].othercat === { be: true });
+console.log(index.a[null] === { _category: { _a:true } });
+console.log(index.a.t[null] === { _category: { _at: true }, _othercat: { _at: true } });
+console.log(index.b.e[null]._othercat === { _be: true });
 ```
 
 ### Implemented lookup functions

@@ -8,7 +8,7 @@ const {
     lookupIterative,
     lookupRecursive,
     lookupRecursiveSingleCharWildcard,
-    lookupRecursiveMultiCharWildcard,
+    lookupRecursiveMultiCharWildcard
 } = require('./index');
 
 // Utility functions

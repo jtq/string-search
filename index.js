@@ -1,14 +1,28 @@
-const util = require('util');
-
-const buildIndex = function(index, strings, category) {
+const buildIndex = function(index, strings, value=true, category=undefined) {
   for(let i=0; i<strings.length; i++) {
-    addToIndex(index, strings[i], category);
+    addToIndex(index, strings[i], value, category);
   };
   return index;
 };
 
-const addToIndex = function(index, str, category) {
+const buildIndexFromArrays = function(index, strings, values, category) {
+  for(let i=0; i<strings.length; i++) {
+    addToIndex(index, strings[i], values[i], category);
+  };
+  return index;
+};
+
+const buildIndexFromField = function(index, objects, fieldName, category) {
+  for(let i=0; i<objects.length; i++) {
+    addToIndex(index, objects[i][fieldName], objects[i], category);
+  };
+  return index;
+};
+
+const addToIndex = function(index, str, value=true, category=undefined) {
   let loop = index;
+  const prefixedCategory = typeof category !== 'undefined' ? '_'+category : category;  // Prefix all values except undefined with an underscore to prevent object-member collisions like "constructor"
+  const prefixedStr = '_' + str;
   for(j=0; j<str.length; j++) {
     let char = str[j];
     if(!loop[char]) {
@@ -18,10 +32,13 @@ const addToIndex = function(index, str, category) {
       if(!loop[char][null]) {
         loop[char][null] = {};
       }
-      if(!loop[char][null][category]) {
-        loop[char][null][category] = {};
+      if(!loop[char][null][prefixedCategory]) {
+        loop[char][null][prefixedCategory] = {};
       }
-      loop[char][null][category][str] = true;
+      if(!loop[char][null][prefixedCategory][prefixedStr]) {
+        loop[char][null][prefixedCategory][prefixedStr] = new Set();
+      }
+      loop[char][null][prefixedCategory][prefixedStr].add(value);
     }
     loop = loop[char];
   }
@@ -139,6 +156,8 @@ const lookupRecursiveMultiCharWildcard = function(index, searchStr, exactMatch) 
 
 module.exports = {
   buildIndex,
+  buildIndexFromArrays,
+  buildIndexFromField,
   addToIndex,
   lookupIterative,
   lookupRecursive,

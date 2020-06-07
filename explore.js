@@ -1,7 +1,6 @@
 const { inspect } = require('util');
 const { readFileSync } = require('fs');
 const { basename } = require('path');
-const util = require('util');
 
 const {
     buildIndex,
@@ -13,7 +12,7 @@ const {
 
 // Utility functions
 function dump(obj) {
-  return util.inspect(obj, false, null, true);
+  return inspect(obj, false, null, true);
 }
 
 function time(title, func) {
