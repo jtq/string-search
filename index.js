@@ -138,18 +138,18 @@ const lookupRecursiveMultiCharWildcard = function(index, searchStr, exactMatch) 
   }
   else if (searchStr[0] === '*') {
 
-      if(searchStr.length === 1 && !exactMatch) { // If we have a multi-character wildcard at the end of a search string, just return the entire subtree at that point
-        return [index];
-      }
+    if(searchStr.length === 1 && !exactMatch) { // If we have a multi-character wildcard at the end of a search string, just return the entire subtree at that point
+      return [index];
+    }
 
-      return Object.keys(index).map(k => {  // We are dealing with a multi-char wildcard, so try both the cases where the wildcard is used up here, and where it propagates down to the next level
-      if(k !== "null") {  // Don't accidentally recurse past the end of words
-        return lookupRecursiveMultiCharWildcard(index[k], searchStr.substr(1), exactMatch).concat(  // Try ending the wildcard here first...
-          lookupRecursiveMultiCharWildcard(index[k], searchStr, exactMatch)                         // ...then retry with the wildcard still applying to more characters
-        );
-      }
-      return [];
-    }).reduce((acc, arr) => acc.concat(arr), []);
+    return lookupRecursiveMultiCharWildcard(index, searchStr.substr(1), exactMatch).concat( // Try everything at this level (* === "")...
+      Object.keys(index).map(k => {
+        if(k !== "null") {  // (Don't accidentally recurse past the end of words)
+          return lookupRecursiveMultiCharWildcard(index[k], searchStr, exactMatch);  // ...then retry with the wildcard still applying to more characters (* === k...)
+        }
+        return [];
+      }).reduce((acc, arr) => acc.concat(arr), [])
+    );
   }
 };
 

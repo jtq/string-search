@@ -366,7 +366,7 @@ test('loose match only single-char wildcard', t => {
 
 test('exact match multi-char wildcard at beginning', t => {
   const {strings, index} = t.context.data;
-  t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*bet', true), [ { undefined: { _abet: new Set([true]) } } ], 'lookupRecursiveMultiCharWildcard match as single char');
+  t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*bet', true), [ { undefined: { _bet: new Set([true]) } }, { undefined: { _abet: new Set([true]) } } ], 'lookupRecursiveMultiCharWildcard match as single char');
   t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*et', true), [ { undefined: { _abet: new Set([true]) } }, { undefined: { _bet: new Set([true]) } } ], 'lookupRecursiveMultiCharWildcard match as multi-char');
 });
 test('missing exact match multi-char wildcard at beginning', t => {
@@ -410,7 +410,7 @@ test('exact match only multi-char wildcard', t => {
 
 test('loose match multi-char wildcard at beginning', t => {
   const {strings, index} = t.context.data;
-  t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*bet', false), [ { null: { undefined: { _abet: new Set([true]) } } } ], 'lookupRecursiveMultiCharWildcard match as single char');
+  t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*bet', false), [ { null: { undefined: { _bet: new Set([true]) } } }, { null: { undefined: { _abet: new Set([true]) } } } ], 'lookupRecursiveMultiCharWildcard match as single char');
   t.deepEqual(lookupRecursiveMultiCharWildcard(index, '*et', false), [ { null: { undefined: { _abet: new Set([true]) } } }, { null: { undefined: { _bet: new Set([true]) } } } ], 'lookupRecursiveMultiCharWildcard match as multi-char');
 });
 test('missing loose match multi-char wildcard at beginning', t => {
