@@ -5,6 +5,7 @@ const {
     buildIndexFromArrays,
     buildIndexFromField,
     addToIndex,
+    removeFromIndex,
     lookupIterative,
     lookupRecursive,
     lookupRecursiveSingleCharWildcard,
@@ -178,6 +179,116 @@ test('build index mutates existing index and returns it', t => {
   const index = buildIndex({}, ['a']);
   const newIndex = buildIndex(index, ['at']);
   t.assert(index === newIndex);
+});
+
+test('remove item from index - value that shares index path and category with other values', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+  addToIndex(index, 'at', false);
+
+  removeFromIndex(index, 'at', true);
+
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } },
+      t: { null: { undefined: { _at:new Set([false]) } } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  });
+});
+
+test('remove item from index - value that shares index path but not category with other values', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+  addToIndex(index, 'at', false, 'cat');
+
+  removeFromIndex(index, 'at', true);
+
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } },
+      t: { null: { _cat: { _at:new Set([false]) } } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  });
+});
+
+test('remove item from index - value with single unique character at end of search path', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+
+  removeFromIndex(index, 'at', true);
+
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  });
+});
+
+test('remove item from index - value with multiple unique characters at end of search path', t => {
+  const index = buildIndex({}, ['a', 'ates', 'be']);
+
+  removeFromIndex(index, 'ates', true);
+
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  });
+});
+
+test('remove non-existent item from index', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+
+  t.throws(() => removeFromIndex(index, 'at', false), { message:'Value not in index' }, 'throw exception');
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } },
+      t: { null: { undefined: { _at:new Set([true]) } } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  }, 'index is unaffected');
+});
+
+test('remove non-existent path from index', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+
+  t.throws(() => removeFromIndex(index, 'z', true), { message:'Search string not in index' }, "search string doesn't exist");
+  t.throws(() => removeFromIndex(index, 'b', true), { message:'Search string not in index' }, "search string isn't a complete word");
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } },
+      t: { null: { undefined: { _at:new Set([true]) } } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  }, 'index is unaffected');
+});
+
+test('remove non-existent category from index', t => {
+  const index = buildIndex({}, ['a', 'at', 'be']);
+
+  t.throws(() => removeFromIndex(index, 'a', true, 'newcategory'), { message:'Search category not in index' }, "search string exists but category doesn't");
+  t.deepEqual(index, {
+    a: {
+      null: { undefined: { _a:new Set([true]) } },
+      t: { null: { undefined: { _at:new Set([true]) } } }
+    },
+    b: {
+      e: { null: { undefined: { _be:new Set([true]) } } }
+    }
+  }, 'index is unaffected');
 });
 
 test('missing exact match at beginning of search string', t => {

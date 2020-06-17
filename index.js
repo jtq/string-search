@@ -23,12 +23,12 @@ const addToIndex = function(index, str, value=true, category=undefined) {
   let loop = index;
   const prefixedCategory = typeof category !== 'undefined' ? '_'+category : category;  // Prefix all values except undefined with an underscore to prevent object-member collisions like "constructor"
   const prefixedStr = '_' + str;
-  for(j=0; j<str.length; j++) {
-    let char = str[j];
+  for(i=0; i<str.length; i++) {
+    let char = str[i];
     if(!loop[char]) {
       loop[char] = {};
     }
-    if(j === str.length-1) {
+    if(i === str.length-1) {
       if(!loop[char][null]) {
         loop[char][null] = {};
       }
@@ -43,6 +43,91 @@ const addToIndex = function(index, str, value=true, category=undefined) {
     loop = loop[char];
   }
   return index;
+}
+
+const removeFromIndex = function(index, str, value=true, category=undefined) {
+  let loop = index;
+  const prefixedCategory = typeof category !== 'undefined' ? '_'+category : category;  // Prefix all values except undefined with an underscore to prevent object-member collisions like "constructor"
+  const prefixedStr = '_' + str;
+  const searchStringNotInIndexError = new Error('Search string not in index');
+  const searchCategoryNotInIndex = new Error('Search category not in index');
+  const valueNotInIndexError = new Error('Value not in index');
+
+  for(i=0; i<str.length; i++) {
+    let char = str[i];
+    if(!loop[char]) {
+      throw searchStringNotInIndexError;
+    }
+    if(i === str.length-1) {
+      if(!loop[char][null]) {
+        throw searchStringNotInIndexError;
+      }
+      if(!loop[char][null][prefixedCategory]) {
+        throw searchCategoryNotInIndex;
+      }
+      if(!loop[char][null][prefixedCategory][prefixedStr]) {
+        throw searchStringNotInIndexError;
+      }
+      if(!loop[char][null][prefixedCategory][prefixedStr].has(value)) {
+        throw valueNotInIndexError;
+      }
+      else {
+        loop[char][null][prefixedCategory][prefixedStr].delete(value);  // Delete value if it exists
+        if(loop[char][null][prefixedCategory][prefixedStr].size === 0) {  // Now check whether this is the only value for this search-string in this category
+          delete(loop[char][null][prefixedCategory][prefixedStr]);          // And if so delete the search-string from the category
+          if(Object.keys(loop[char][null][prefixedCategory]).length === 0) { // Now check if this is the only search-string in the category
+            delete(loop[char][null][prefixedCategory]);                       // And if so delete the category
+            if(Object.keys(loop[char][null]).length === 0) { // Now check if this is the only category for this completed search-string
+              // And if so walk from the root back to this node again, until we find the highest node with no values under it, and then delete it
+              let checkLoop = index;
+              for(j=0; j<str.length; j++) {
+                let checkChar = str[j];
+                if(!hasValues(checkLoop[checkChar])) {
+                  delete(checkLoop[checkChar]);
+                  break;
+                }
+                else {
+                  checkLoop = checkLoop[checkChar];
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    loop = loop[char];
+  }
+  return index;
+}
+
+// Walk a subtree quickly checking if there are any values underneath it, and dump out as soon as we find one.
+// Used by removeFromIndex to determine how far back up its ancestry it should delete once it has removed the specific value, if removing that value leaves the word/category/etc empty.
+const hasValues = function(index) {
+
+  // Check to see if this is the end of any words that have at least one value associated with it
+  if(index[null]) {
+    const categories = Object.keys(index[null]);
+    for(let i=0; i<categories.length; i++) {
+      const category = categories[i];
+      const words = Object.keys(index[null][category]);
+      for(let j=0; j<words.length; j++) {
+        const word = words[j];
+        if(index[null][category][word] instanceof Set && index[null][category][word].size > 0) {  // The second we find even a single value we can dump out immediately
+          return true;
+        }
+      }
+    }
+  }
+
+  // Else recurse into it to find out if there are any completed words with values underneath it
+  const keys = Object.keys(index);
+  for(let i=0; i<keys.length; i++) {
+    const key = keys[i];
+    if(key !== "null" && hasValues(index[key])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 const lookupIterative = function(index, str, exactMatch) {
@@ -159,6 +244,7 @@ module.exports = {
   buildIndexFromArrays,
   buildIndexFromField,
   addToIndex,
+  removeFromIndex,
   lookupIterative,
   lookupRecursive,
   lookupRecursiveSingleCharWildcard,
